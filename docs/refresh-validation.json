@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-10",
+  "scope": "Baseline layout and motion adapted to the existing MB/C3M Next.js website",
+  "automated": {
+    "tests": { "passed": 19, "failed": 0, "runtime": "Node 24" },
+    "lint": "passed",
+    "typescript": "passed during production build",
+    "productionBuild": { "command": "npm run build -- --webpack", "result": "passed", "generatedPaths": 49 },
+    "defaultTurbopackBuild": "environment worker socket binding permission error",
+    "publicRouteResponses": { "checked": 33, "http200": 33, "report": "refresh-routes.json" }
+  },
+  "browser": {
+    "widths": [1280, 390, 320],
+    "horizontalOverflowObserved": false,
+    "checked": [
+      "Production-build stylesheet rendering",
+      "Desktop hero stages with one active WebGL canvas",
+      "Product 3D viewer mounts one canvas",
+      "Native component modal focuses its close control and restores trigger focus after Escape",
+      "Mobile component modal fits the viewport",
+      "Featured carousel next action changes product",
+      "Add to quotation and required company, phone and city validation",
+      "Product contact link includes the selected SKU",
+      "Mobile navigation opens and closes",
+      "Disabling product animation removes the extended hero scroll track",
+      "Cookie preference control remains available above the contact widget"
+    ]
+  },
+  "notVerified": [
+    "Hosted Supabase migrations, owner login and MFA",
+    "Live Turnstile and Resend delivery",
+    "Hosting DDoS rules and provider billing controls",
+    "Production Core Web Vitals and initial JavaScript budget",
+    "Full assistive-technology compatibility",
+    "Reference image reuse rights and correspondence to supplied stock",
+    "Exact CAD geometry, materials and engineering ratings"
+  ],
+  "remainingAssetsAndServices": [
+    "Owner-approved photographs and matching GLB models",
+    "Cloudflare R2 upload workflow",
+    "Private environment configuration and live integration validation"
+  ]
+}

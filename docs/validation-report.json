@@ -1,0 +1,189 @@
+{
+  "publicPages": 27,
+  "imageAssets": 11,
+  "errors": [],
+  "custom404": 404,
+  "homeSecurityHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'  https://challenges.cloudflare.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com; font-src 'self'; connect-src 'self'  https://challenges.cloudflare.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com ; frame-src https://challenges.cloudflare.com https://www.google.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self' blob:",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
+  },
+  "pages": [
+    {
+      "path": "/",
+      "status": 200,
+      "htmlBytes": 96024,
+      "gzipBytes": 19109
+    },
+    {
+      "path": "/about",
+      "status": 200,
+      "htmlBytes": 23536,
+      "gzipBytes": 5389
+    },
+    {
+      "path": "/accessibility",
+      "status": 200,
+      "htmlBytes": 23605,
+      "gzipBytes": 5381
+    },
+    {
+      "path": "/contact",
+      "status": 200,
+      "htmlBytes": 27369,
+      "gzipBytes": 5992
+    },
+    {
+      "path": "/cookies",
+      "status": 200,
+      "htmlBytes": 24156,
+      "gzipBytes": 5517
+    },
+    {
+      "path": "/image-credits",
+      "status": 200,
+      "htmlBytes": 25473,
+      "gzipBytes": 5800
+    },
+    {
+      "path": "/industries",
+      "status": 200,
+      "htmlBytes": 31215,
+      "gzipBytes": 5973
+    },
+    {
+      "path": "/industries/cooler",
+      "status": 200,
+      "htmlBytes": 92582,
+      "gzipBytes": 20645
+    },
+    {
+      "path": "/industries/fan",
+      "status": 200,
+      "htmlBytes": 78485,
+      "gzipBytes": 18020
+    },
+    {
+      "path": "/industries/heater",
+      "status": 200,
+      "htmlBytes": 60221,
+      "gzipBytes": 14267
+    },
+    {
+      "path": "/industries/kitchen-appliance",
+      "status": 200,
+      "htmlBytes": 34457,
+      "gzipBytes": 8317
+    },
+    {
+      "path": "/industries/washing-machine",
+      "status": 200,
+      "htmlBytes": 69917,
+      "gzipBytes": 15457
+    },
+    {
+      "path": "/privacy",
+      "status": 200,
+      "htmlBytes": 25651,
+      "gzipBytes": 5788
+    },
+    {
+      "path": "/products",
+      "status": 200,
+      "htmlBytes": 151214,
+      "gzipBytes": 32015
+    },
+    {
+      "path": "/products/ball-bearings",
+      "status": 200,
+      "htmlBytes": 75972,
+      "gzipBytes": 17849
+    },
+    {
+      "path": "/products/mini-fan-motor-dc-geared",
+      "status": 200,
+      "htmlBytes": 79828,
+      "gzipBytes": 18383
+    },
+    {
+      "path": "/products/water-cooler-pump-lh1020",
+      "status": 200,
+      "htmlBytes": 79209,
+      "gzipBytes": 18741
+    },
+    {
+      "path": "/quote",
+      "status": 200,
+      "htmlBytes": 44418,
+      "gzipBytes": 9484
+    },
+    {
+      "path": "/terms",
+      "status": 200,
+      "htmlBytes": 26010,
+      "gzipBytes": 5846
+    },
+    {
+      "path": "/products/capacitors",
+      "status": 200,
+      "htmlBytes": 73996,
+      "gzipBytes": 17503
+    },
+    {
+      "path": "/products/geyser-element",
+      "status": 200,
+      "htmlBytes": 54741,
+      "gzipBytes": 13073
+    },
+    {
+      "path": "/products/heater-aluminium-parts",
+      "status": 200,
+      "htmlBytes": 61612,
+      "gzipBytes": 15254
+    },
+    {
+      "path": "/products/heater-rod",
+      "status": 200,
+      "htmlBytes": 54563,
+      "gzipBytes": 12944
+    },
+    {
+      "path": "/products/induction-cooker",
+      "status": 200,
+      "htmlBytes": 34364,
+      "gzipBytes": 8150
+    },
+    {
+      "path": "/products/mini-fan-motor-ac-synchronous",
+      "status": 200,
+      "htmlBytes": 80370,
+      "gzipBytes": 18413
+    },
+    {
+      "path": "/products/washer-buttons-and-switches",
+      "status": 200,
+      "htmlBytes": 72913,
+      "gzipBytes": 16343
+    },
+    {
+      "path": "/products/washing-machine-timer",
+      "status": 200,
+      "htmlBytes": 69838,
+      "gzipBytes": 15445
+    }
+  ],
+  "unconfiguredSubmissionStatus": 503,
+  "browserChecks": [
+    "1280px desktop",
+    "390px and 320px mobile",
+    "Search filtering",
+    "Photo / illustrated assembly switching",
+    "3D keyboard rotation and zoom retain canvas",
+    "Quote quantity merge and persistence",
+    "Invalid quantities disable submission",
+    "Required contact validation",
+    "Map absent before consent and removed after withdrawal",
+    "Skip link focuses main"
+  ]
+}

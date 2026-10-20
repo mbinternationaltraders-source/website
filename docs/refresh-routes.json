@@ -1,0 +1,138 @@
+{
+  "date": "2026-10-10",
+  "build": "webpack",
+  "routes": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/about",
+      "status": 200
+    },
+    {
+      "path": "/accessibility",
+      "status": 200
+    },
+    {
+      "path": "/contact",
+      "status": 200
+    },
+    {
+      "path": "/cookies",
+      "status": 200
+    },
+    {
+      "path": "/icon.svg",
+      "status": 200
+    },
+    {
+      "path": "/image-credits",
+      "status": 200
+    },
+    {
+      "path": "/industries",
+      "status": 200
+    },
+    {
+      "path": "/industries/cooler",
+      "status": 200
+    },
+    {
+      "path": "/industries/fan",
+      "status": 200
+    },
+    {
+      "path": "/industries/heater",
+      "status": 200
+    },
+    {
+      "path": "/industries/kitchen-appliance",
+      "status": 200
+    },
+    {
+      "path": "/industries/washing-machine",
+      "status": 200
+    },
+    {
+      "path": "/opengraph-image",
+      "status": 200
+    },
+    {
+      "path": "/privacy",
+      "status": 200
+    },
+    {
+      "path": "/products",
+      "status": 200
+    },
+    {
+      "path": "/products/ball-bearings",
+      "status": 200
+    },
+    {
+      "path": "/products/capacitors",
+      "status": 200
+    },
+    {
+      "path": "/products/geyser-element",
+      "status": 200
+    },
+    {
+      "path": "/products/heater-aluminium-parts",
+      "status": 200
+    },
+    {
+      "path": "/products/heater-rod",
+      "status": 200
+    },
+    {
+      "path": "/products/induction-cooker",
+      "status": 200
+    },
+    {
+      "path": "/products/mini-fan-motor-ac-synchronous",
+      "status": 200
+    },
+    {
+      "path": "/products/mini-fan-motor-dc-geared",
+      "status": 200
+    },
+    {
+      "path": "/products/washer-buttons-and-switches",
+      "status": 200
+    },
+    {
+      "path": "/products/washing-machine-timer",
+      "status": 200
+    },
+    {
+      "path": "/products/water-cooler-pump-lh1020",
+      "status": 200
+    },
+    {
+      "path": "/quote",
+      "status": 200
+    },
+    {
+      "path": "/quote/thank-you",
+      "status": 200
+    },
+    {
+      "path": "/robots.txt",
+      "status": 200
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200
+    },
+    {
+      "path": "/terms",
+      "status": 200
+    },
+    {
+      "path": "/thank-you",
+      "status": 200
+    }
+  ]
+}
