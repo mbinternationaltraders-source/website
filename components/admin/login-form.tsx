@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { browserClient } from "@/lib/supabase/browser";
 export function LoginForm({ configured }: { configured: boolean }) {
@@ -11,8 +12,45 @@ export function LoginForm({ configured }: { configured: boolean }) {
     [secret, setSecret] = useState(""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
-    [stage, setStage] = useState<"login" | "enroll" | "verify">("login");
+    [stage, setStage] = useState<"login" | "enroll" | "verify" | "forgot">("login"),
+    [notice, setNotice] = useState("");
   const router = useRouter();
+
+  // Messages from redirects, and skip straight to the dashboard if this browser is already fully signed in.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const messages: Record<string, string> = {
+      reset: "Password saved. Sign in with it now.",
+      link: "That email link has expired or was already used. Request a new one.",
+      denied: "This account does not have access to the dashboard.",
+      mfa: "Enter your authenticator code to continue.",
+    };
+    // Shown once, from fixed text only: nothing from the URL is rendered.
+    const key = Object.keys(messages).find((k) => q.has(k));
+    if (key) setNotice(messages[key]); // eslint-disable-line react-hooks/set-state-in-effect
+    if (!configured) return;
+    (async () => {
+      const db = browserClient();
+      const { data: level } = await db.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (level?.currentLevel !== "aal2") return;
+      const { data: { user } } = await db.auth.getUser();
+      const { data: member } = await db.from("owners").select("user_id").eq("user_id", user?.id ?? "").maybeSingle();
+      if (member) router.replace("/admin");
+    })();
+  }, [configured, router]);
+
+  async function forgot(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    await browserClient().auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/admin/auth/callback?next=/admin/reset`,
+    });
+    setBusy(false);
+    // Same message whether or not the address has an account, so this cannot reveal who is registered.
+    setNotice("If that address has dashboard access, a reset link is on its way. Check your inbox and spam folder.");
+    setStage("login");
+  }
   async function begin(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     setBusy(true);
@@ -113,6 +151,9 @@ export function LoginForm({ configured }: { configured: boolean }) {
   if (!configured)
     return (
       <div className="login-panel">
+        {process.env.NODE_ENV !== "production" && (
+          <p className="ad-msg" data-tone="up">On this computer you can <Link href="/admin">open the dashboard with demo data</Link>.</p>
+        )}
         <span className="eyebrow">OWNER ACCESS</span>
         <h1 style={{ marginTop: 16 }}>Admin setup pending.</h1>
         <p>
@@ -131,7 +172,9 @@ export function LoginForm({ configured }: { configured: boolean }) {
           ? "Welcome back."
           : stage === "enroll"
             ? "Protect your account."
-            : "Verify it’s you."}
+            : stage === "forgot"
+              ? "Reset your password."
+              : "Verify it’s you."}
       </h1>
       {stage === "login" ? (
         <form onSubmit={begin}>
@@ -162,6 +205,18 @@ export function LoginForm({ configured }: { configured: boolean }) {
           <button className="button button-full" disabled={busy}>
             {busy ? "Signing in…" : "Continue"}
           </button>
+          <button type="button" className="text-button" onClick={() => { setStage("forgot"); setError(""); setNotice(""); }}>
+            Forgot password?
+          </button>
+        </form>
+      ) : stage === "forgot" ? (
+        <form onSubmit={forgot}>
+          <p>Enter your dashboard email. We will send a link to set a new password.</p>
+          <label className="field-label" htmlFor="reset-email">Email</label>
+          <input id="reset-email" className="form-control" type="email" autoComplete="username" required
+            value={email} onChange={(e) => setEmail(e.target.value)} />
+          <button className="button button-full" disabled={busy}>{busy ? "Sending…" : "Send reset link"}</button>
+          <button type="button" className="text-button" onClick={() => setStage("login")}>Back to sign-in</button>
         </form>
       ) : stage === "enroll" ? (
         <>
@@ -216,12 +271,13 @@ export function LoginForm({ configured }: { configured: boolean }) {
           </button>
         </form>
       )}
+      {notice && <p className="ad-msg" data-tone="up" role="status">{notice}</p>}
       {error && (
         <p className="form-error" role="alert">
           {error}
         </p>
       )}
-      {stage !== "login" && (
+      {(stage === "enroll" || stage === "verify") && (
         <button
           className="text-button"
           onClick={async () => {

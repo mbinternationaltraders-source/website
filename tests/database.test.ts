@@ -5,6 +5,7 @@ import { PGlite } from "@electric-sql/pglite";
 let db: PGlite;
 const owner = "10000000-0000-4000-8000-000000000001";
 const outsider = "10000000-0000-4000-8000-000000000002";
+const staff = "10000000-0000-4000-8000-000000000003";
 const product = "20000000-0000-4000-8000-000000000001";
 const draft = "20000000-0000-4000-8000-000000000002";
 const requestId = "30000000-0000-4000-8000-000000000001";
@@ -51,6 +52,12 @@ before(async () => {
   );
   await db.exec(
     await readFile("supabase/migrations/0003_token_bucket.sql", "utf8"),
+  );
+  await db.exec(
+    await readFile("supabase/migrations/0004_first_response.sql", "utf8"),
+  );
+  await db.exec(
+    await readFile("supabase/migrations/0005_portal.sql", "utf8"),
   );
   await db.exec(`insert into auth.users values ('${owner}'),('${outsider}'); insert into public.owners(user_id) values ('${owner}');
  insert into public.products(id,slug,family,name,status) values ('${product}','test-published','Test','Published component','published'),('${draft}','test-draft','Test','Private draft','draft');
@@ -137,6 +144,52 @@ test("database: owner allowlist and AAL2 are both required for private records",
       "update public.leads set status='won' returning id",
     );
     assert.equal(r.rows.length, 0);
+  } finally {
+    await db.exec("reset role");
+    await identity("", "");
+  }
+});
+test("database: first reply time is stamped once by the database and cannot be written by the owner", async () => {
+  await db.exec("set role authenticated");
+  try {
+    await identity(owner, "aal2");
+    await assert.rejects(
+      db.query("update public.leads set first_response_at = now() - interval '9 days'"),
+      /permission denied/,
+      "owner cannot backdate the reply time",
+    );
+    await db.query("update public.leads set status='new'");
+    const none = await db.query<{ t: string | null }>("select first_response_at t from public.leads");
+    assert.equal(none.rows[0].t, null);
+    await db.query("update public.leads set status='contacted'");
+    const first = await db.query<{ t: string }>("select first_response_at::text t from public.leads");
+    assert.ok(first.rows[0].t, "stamped on leaving new");
+    await db.query("update public.leads set status='quoted'");
+    const again = await db.query<{ t: string }>("select first_response_at::text t from public.leads");
+    assert.equal(again.rows[0].t, first.rows[0].t, "later changes keep the first reply time");
+  } finally {
+    await db.exec("reset role");
+    await identity("", "");
+  }
+});
+test("database: staff work enquiries but cannot delete them, edit products or see the team list", async () => {
+  await db.exec(`insert into auth.users values ('${staff}'); insert into public.owners(user_id, role) values ('${staff}', 'staff');`);
+  await db.exec("set role authenticated");
+  try {
+    await identity(staff, "aal1");
+    assert.equal(await count("leads"), 0, "staff still need two-step verification");
+    await identity(staff, "aal2");
+    assert.equal(await count("leads"), 1, "staff can read enquiries");
+    const upd = await db.query("update public.leads set deal_value = 125000, follow_up_at = now(), source = 'google' returning id");
+    assert.equal(upd.rows.length, 1, "staff can update value, follow-up and source");
+    const del = await db.query("delete from public.leads returning id");
+    assert.equal(del.rows.length, 0, "staff cannot delete enquiries");
+    const prod = await db.query("update public.products set name = 'Hacked' returning id");
+    assert.equal(prod.rows.length, 0, "staff cannot edit the catalogue");
+    assert.equal((await db.query("select 1 from public.owners")).rows.length, 1, "staff only see their own team row");
+    await identity(owner, "aal2");
+    assert.equal((await db.query("select 1 from public.owners")).rows.length, 2, "owner sees the whole team");
+    await assert.rejects(db.query("update public.leads set first_response_at = now()"), /permission denied/);
   } finally {
     await db.exec("reset role");
     await identity("", "");

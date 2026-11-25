@@ -7,7 +7,7 @@ const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline' ${production ? "" : "'unsafe-eval'"} https://challenges.cloudflare.com https://www.googletagmanager.com`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://www.google-analytics.com https://www.googletagmanager.com",
+  `img-src 'self' data: blob: ${supabaseOrigin} https://www.google-analytics.com https://www.googletagmanager.com`,
   "font-src 'self'",
   `connect-src 'self' ${supabaseOrigin} https://challenges.cloudflare.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com ${production ? "" : "ws://127.0.0.1:* ws://localhost:*"}`,
   "frame-src https://challenges.cloudflare.com https://www.google.com",
@@ -22,7 +22,11 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   devIndicators: false,
-  experimental: { serverActions: { bodySizeLimit: "1mb" } },
+  // 6 MB: product photos (max 5 MB, checked again in the upload action) plus form fields.
+  experimental: {
+    agentUpgrade: "security",
+    serverActions: { bodySizeLimit: "6mb" },
+  },
   turbopack: {
     root: __dirname,
     rules: { "*.css": { loaders: ["@tailwindcss/turbopack"], as: "*.css" } },

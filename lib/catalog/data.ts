@@ -8,7 +8,8 @@ import type { Industry, Product } from "./types";
 const PRODUCT_FIELDS = `slug, family, name, model, model_note, summary, description, card_specs, specs, spec_note,
   sort, updated_at,
   variants (sku, name, units, min_qty, sort),
-  product_industries (industries (slug))`;
+  product_industries (industries (slug)),
+  product_media (url, alt, sort, kind)`;
 
 type Row = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -26,6 +27,11 @@ function toProduct(r: Row): Product {
     specs: r.specs,
     specNote: r.spec_note,
     updatedAt: r.updated_at,
+    // Owner-uploaded photos; the database only returns approved media of published products.
+    media: [...(r.product_media ?? [])]
+      .filter((m: Row) => m.kind === "photo")
+      .sort(bySort)
+      .map((m: Row) => ({ url: m.url, alt: m.alt })),
     industries: (r.product_industries ?? [])
       .map((pi: Row) => pi.industries?.slug)
       .filter(Boolean),

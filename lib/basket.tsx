@@ -73,7 +73,8 @@ export function BasketProvider({ children }: { children: ReactNode }) {
           )
         : [...current, item];
     });
-    setNotice("Added to your quote.");
+    // Say so when a repeat add raises an existing line, so a double click is never a silent change.
+    setNotice(exists ? `Already in your quote: quantity updated to ${(exists.quantity + item.quantity).toLocaleString("en")}.` : "Added to your quote.");
     return true;
   }
   function update(sku: string, unit: string, patch: Partial<BasketItem>) {

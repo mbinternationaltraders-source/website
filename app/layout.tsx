@@ -38,6 +38,14 @@ export default function RootLayout({
       <head>
         {/* Reveal animations only hide content when JavaScript is running to show it again. */}
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        {/* Browsers abort a page view transition when the viewport resizes mid-animation (mobile address bar);
+            React leaves that rejection unhandled. The navigation itself completes, so only that exact error is silenced. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "addEventListener('unhandledrejection',function(e){var r=e.reason;if(r&&r.name==='InvalidStateError'&&/Transition was aborted/.test(r.message))e.preventDefault()})",
+          }}
+        />
       </head>
       <body>
         <BasketProvider>

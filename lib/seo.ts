@@ -32,3 +32,7 @@ export function metadataFor(
     },
   };
 }
+
+// Serialise structured data for a <script type="application/ld+json"> block. "<" becomes the JSON
+// escape <, so catalogue text containing "</script>" can never end the script tag (stored XSS).
+export const jsonLd = (value: unknown) => JSON.stringify(value).replace(/</g, "\\u003c");

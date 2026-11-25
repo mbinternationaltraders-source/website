@@ -92,7 +92,7 @@ export const policies = {
       ],
       [
         "Motion preferences",
-        "You can turn product animations off in Manage choices. The site also respects your device’s reduced motion setting. Static component views and quotation controls remain available.",
+        "You can turn product animations and background videos off in Manage choices. The site also respects your device’s reduced motion setting. Product photos and quotation controls remain available.",
       ],
     ],
   },
@@ -107,15 +107,15 @@ export const policies = {
       ],
       [
         "Using the website",
-        "Main navigation, product controls and forms are intended to work with a keyboard. A Skip to content link is available at the start of each public page. Forms have visible labels and validation feedback. Product information and component descriptions are provided in text outside the 3D view.",
+        "Main navigation, product controls and forms are intended to work with a keyboard. A Skip to content link is available at the start of each public page. Forms have visible labels and validation feedback. Product information and specifications are provided as text, not only in photos or videos.",
       ],
       [
-        "Motion and 3D",
-        "Part exploration can be activated by a button without hovering or dragging. Device reduced motion settings are respected, and animation preferences are available in Cookie preferences. You can use the standard illustration instead of 3D. Quotations do not depend on loading or operating the 3D viewer.",
+        "Motion and video",
+        "Background and product breakdown videos are silent, have a pause button and stop when off screen. Device reduced motion settings are respected, and animation preferences are available in Cookie preferences, which show a still image instead. Quotations do not depend on any video or animation.",
       ],
       [
         "Known limitations",
-        "External services, including Google Maps, WhatsApp and the form security check, have their own interfaces. General product illustrations cannot replace confirmed specifications. If a visual, form or service is difficult to use, contact us directly for assistance.",
+        "External services, including Google Maps, WhatsApp and the form security check, have their own interfaces. Breakdown videos show typical construction and cannot replace confirmed specifications. If a visual, form or service is difficult to use, contact us directly for assistance.",
       ],
       [
         "Report a problem",

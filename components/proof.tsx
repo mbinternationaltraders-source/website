@@ -59,7 +59,7 @@ export function TestimonialCards({ items, summary = true }: { items: Testimonial
               <span className="t-more">+{clients.length - 4}</span>
             </span>
             <Link href="/testimonials" className="t-link">
-              Read testimonials <span aria-hidden="true">↗</span>
+              Read testimonials <span aria-hidden="true">→</span>
             </Link>
           </div>
         </Rise>

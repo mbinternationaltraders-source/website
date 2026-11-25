@@ -6,10 +6,11 @@ import { usePreferences } from "./preferences";
 
 // Every dot pops in individually on a canvas, as one ripple out from Gujranwala across Pakistan and its
 // neighbours; then customer pins pop in nearest-first. It replays each time the page is opened.
-const COLORS = ["#cdcdcd", "#0a0a0a", "#2563eb"]; // neighbour, Pakistan, Gujranwala
-const RADIUS = [7.4, 9.6, 9.6];
-const POP_MS = 650;
-const END_MS = Math.max(...dots.map((d) => d.d)) + POP_MS;
+const COLORS = ["#d4d4d4", "#01411c", "#2563eb"]; // neighbour, Pakistan (flag green), Gujranwala
+const RADIUS = [5.6, 7.2, 7.2]; // smaller dots leave visible gaps between them
+const SLOW = 1.6; // stretches the whole reveal (dots, pins, label) for a calmer pace
+const POP_MS = 900;
+const END_MS = Math.max(...dots.map((d) => d.d)) * SLOW + POP_MS;
 const backOut = (p: number, s: number) => 1 + (s + 1) * (p - 1) ** 3 + s * (p - 1) ** 2;
 
 export function PakistanMap({ people }: { people: Testimonial[] }) {
@@ -26,7 +27,7 @@ export function PakistanMap({ people }: { people: Testimonial[] }) {
     const draw = () => {
       ctx.clearRect(0, 0, cv.width, cv.height);
       for (const d of dots) {
-        const p = Math.min(1, (t - d.d) / POP_MS);
+        const p = Math.min(1, (t - d.d * SLOW) / POP_MS);
         if (p <= 0) continue;
         const r = RADIUS[d.kind] * backOut(p, d.kind ? 2.4 : 1.4) * scale;
         ctx.globalAlpha = Math.min(1, p * 3);
@@ -84,7 +85,7 @@ export function PakistanMap({ people }: { people: Testimonial[] }) {
           type="button"
           className="pk-pin"
           data-tone={i % 6}
-          style={{ left: `${px(p.lon)}%`, top: `${py(p.lat)}%`, "--d": `${PINS_START + i * 170}ms` } as CSSProperties}
+          style={{ left: `${px(p.lon)}%`, top: `${py(p.lat)}%`, "--d": `${(PINS_START + i * 170) * SLOW}ms` } as CSSProperties}
           aria-label={`${p.name}, ${p.city}`}
         >
           <span className="pk-avatar" aria-hidden="true">{initials(p.name)}</span>

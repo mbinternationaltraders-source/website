@@ -1,8 +1,8 @@
 // Owner-supplied product photography. Files live in /public/images/products/<slug>/<n>-<width>.webp.
-export type Photo = { base: string; alt: string; studio: boolean };
+export type Photo = { base: string; alt: string; studio: boolean; url?: string }; // url: uploaded photo, served as-is
 // Bump when photos are replaced in place, so browsers drop cached copies of the old files.
 const PHOTO_VERSION = "2026-10-20b";
-export const photoSrc = (p: Photo, w: number) => `${p.base}-${w}.webp?v=${PHOTO_VERSION}`;
+export const photoSrc = (p: Photo, w: number) => p.url ?? `${p.base}-${w}.webp?v=${PHOTO_VERSION}`;
 
 const set = (slug: string, shots: [alt: string, studio?: boolean][]): Photo[] =>
   shots.map(([alt, studio = true], i) => ({

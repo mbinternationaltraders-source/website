@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, X, FileText, Phone, Mail } from "lucide-react";
+import { Menu, X, FileText, Phone, Mail, UserRound } from "lucide-react";
 import { site, whatsappLink } from "@/lib/site";
 import { useBasket } from "@/lib/basket";
 import { testimonials } from "@/lib/proof";
@@ -71,6 +71,9 @@ export function Header() {
             <FileText size={17} aria-hidden="true" />
             <span className="quote-link-text">Quote list</span>
             <span className="quote-count">{items.length}</span>
+          </Link>
+          <Link className="quote-link owner-link" href="/admin/login" prefetch={false} aria-label="Owner sign-in" title="Owner sign-in">
+            <UserRound size={17} aria-hidden="true" />
           </Link>
           <Link className="button header-cta" href="/quote">
             Request a quote
@@ -148,9 +151,9 @@ export function Footer() {
         </div>
         <nav className="footer-links" aria-label="Explore">
           {nav.map(([href, text]) => (
-            <Link key={href} href={href}>{text} <span aria-hidden="true">↗</span></Link>
+            <Link key={href} href={href}>{text}</Link>
           ))}
-          <Link href="/quote">Quote list <span aria-hidden="true">↗</span></Link>
+          <Link href="/quote">Quote list</Link>
           <a href={site.directions} target="_blank" rel="noopener noreferrer">Directions <span aria-hidden="true">↗</span></a>
           <a href={site.facebook} target="_blank" rel="noopener noreferrer">Facebook <span aria-hidden="true">↗</span></a>
         </nav>
@@ -161,6 +164,7 @@ export function Footer() {
             <Link href="/terms">Terms</Link>
             <Link href="/cookies">Cookies</Link>
             <Link href="/accessibility">Accessibility</Link>
+            <Link href="/admin/login" prefetch={false}>Owner sign-in</Link>
             <CookieSettings />
           </nav>
         </div>

@@ -3,6 +3,10 @@ import { serviceClient } from "@/lib/supabase/service";
 import { verifyTurnstile } from "@/lib/server/turnstile";
 import { allow } from "@/lib/server/rate-limit";
 import { readBoundedJson, noStore } from "@/lib/server/request";
+import { after } from "next/server";
+import { emailConfigured, processOutbox } from "@/lib/server/email-worker";
+// Leaves time for the post-response email send started with after().
+export const maxDuration = 60;
 export async function POST(request: Request) {
   const configured = process.env.NEXT_PUBLIC_SITE_URL;
   if (process.env.NODE_ENV === "production" && !configured)
@@ -160,6 +164,10 @@ export async function POST(request: Request) {
     }
     const result = data?.[0];
     if (!result?.reference) throw new Error("No saved reference");
+    // Send the owner notification and receipt now instead of waiting for the scheduled job.
+    // The queue row is already committed, so if this fails the scheduled job retries it.
+    if (result.created && emailConfigured())
+      after(() => processOutbox(20_000).catch(() => console.error("email_after_failed")));
     return noStore(
       { reference: result.reference, created: result.created },
       result.created ? 201 : 200,

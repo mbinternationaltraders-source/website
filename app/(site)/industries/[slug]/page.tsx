@@ -15,13 +15,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const data = await getIndustry((await params).slug);
-  return data
-    ? metadataFor(
-        data.industry.name + " manufacturing",
-        data.industry.intro,
-        `/industries/${data.industry.slug}`,
-      )
-    : { title: "Industry not found" };
+  // Resolved before the page streams, so an unknown slug gets a real 404 status, not a "soft 404".
+  if (!data) notFound();
+  return metadataFor(data.industry.name + " manufacturing", data.industry.intro, `/industries/${data.industry.slug}`);
 }
 async function IndustryPage({ params }: { params: Promise<{ slug: string }> }) {
   const data = await getIndustry((await params).slug);

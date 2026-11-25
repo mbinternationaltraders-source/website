@@ -66,8 +66,14 @@ To deliver the final realistic breakdown, obtain the exact supplied product and 
 ## Connect the services
 
 1. Copy `.env.example` to `.env.local`. Enter credentials locally or through the hosting provider's secret manager. Never put the Supabase secret, Turnstile secret, Resend key, rate-limit salt or cron secret in a `NEXT_PUBLIC_` variable. Do not paste secrets into chat or commit them.
-2. Create the Supabase project; apply `supabase/migrations/0001_init.sql`, `0002_ingestion_guards.sql`, then `0003_token_bucket.sql` in order. Run `npm run seed` to load the initial catalog. Seeding updates matching slugs/SKUs; do not use it to overwrite later owner edits inadvertently.
-3. Create the owner's Auth account through the Supabase dashboard, disable public signups, and insert its user UUID into `public.owners`. Sign in at `/admin/login` and enrol/verify an authenticator. Lead access and writes require both the allowlist and an AAL2 session. Keep a documented account recovery procedure.
+2. Create the Supabase project; apply every file in `supabase/migrations/` in number order (`0001` to `0006`; `0006` creates the `product-media` storage bucket for owner photo uploads). Run `npm run seed` to load the initial catalog. Seeding updates matching slugs/SKUs; do not use it to overwrite later owner edits inadvertently.
+3. Owner portal sign-in (the person icon in the site header and "Owner sign-in" in the footer both open `/admin/login`):
+   - In Supabase Auth, disable public signups. Under URL Configuration set the Site URL to `NEXT_PUBLIC_SITE_URL` and add `<site>/admin/auth/callback` as a redirect URL (used by password-reset and invite emails).
+   - Create the owner's account in the Supabase dashboard, then run `insert into public.owners (user_id, role, email) values ('<user uuid>', 'owner', '<email>');`.
+   - The owner signs in at `/admin/login`; the first sign-in enrols an authenticator app (TOTP), every later sign-in asks for its code. Lead access and writes need both the allowlist row and that second step (AAL2).
+   - "Forgot password?" on the sign-in page emails a reset link to `/admin/reset` (passwords need 12+ characters).
+   - Owners invite staff from Admin → Team (needs `SUPABASE_SECRET_KEY` on the server). Staff can work enquiries, customers and reports; only owners can export, edit products and photos, or manage the team. The database enforces the same split.
+   - Keep a documented account recovery procedure (another owner, or removing the MFA factor in the Supabase dashboard).
 4. Set real Turnstile site/secret keys with the correct production hostname. Published Cloudflare test keys are only accepted in development. Set a randomly generated `RATE_LIMIT_SALT` and a 32+ character `CRON_SECRET`.
 5. Verify an email domain with Resend, set `EMAIL_FROM`, `EMAIL_REPLY_TO`, `OWNER_EMAIL` and `RESEND_API_KEY`. A Gmail address cannot substitute for a verified sending domain. Provision the scheduled routes in `vercel.json`; the proposed ten-minute email schedule requires a host/plan that supports it.
 6. Set the real HTTPS `NEXT_PUBLIC_SITE_URL`. Configure HTTPS enforcement, WAF/DDoS rules and platform spending limits before launch. This implementation trusts Vercel's provider-written client-IP header. Other hosts must implement an equivalent trusted edge adapter; production forms fail closed without it.

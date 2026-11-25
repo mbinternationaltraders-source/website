@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
 import type { Product, Industry } from "@/lib/catalog/types";
 import { ProductCard } from "./product-card";
+import { matchesSearch } from "@/lib/catalog/search";
 export function CatalogBrowser({
   products,
   industries,
@@ -17,9 +18,7 @@ export function CatalogBrowser({
     let list = products.filter(
       (p) =>
         (industry === "all" || p.industries.includes(industry)) &&
-        `${p.name} ${p.model || ""} ${p.summary} ${p.family} ${p.variants.map((v) => v.sku).join(" ")}`
-          .toLowerCase()
-          .includes(search.trim().toLowerCase()),
+        matchesSearch(p, search),
     );
     if (sort === "name")
       list = [...list].sort((a, b) => a.name.localeCompare(b.name));

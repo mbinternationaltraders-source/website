@@ -1,4 +1,4 @@
-import type { CSSProperties, ElementType, ReactNode } from "react";
+import { Fragment, type CSSProperties, type ElementType, type ReactNode } from "react";
 
 // Server-safe reveal primitives. <RevealObserver> sets data-shown when they enter the viewport;
 // the motion itself is CSS (globals.css "Motion"), so nothing here ships JavaScript.
@@ -12,9 +12,12 @@ export function Words({ text, as: Tag = "span", stagger = 110, delay = 0, classN
   return (
     <Tag className={className} data-reveal="mask" aria-label={text}>
       {text.split(" ").map((w, i) => (
-        <span key={i} className="mask" aria-hidden="true">
+        // A real space between word masks so copied/indexed text reads "Built to run", not "Builttorun".
+        <Fragment key={i}>{i > 0 && " "}
+        <span className="mask" aria-hidden="true">
           <span style={v({ "--d": `${delay + i * stagger}ms` })}>{w}</span>
         </span>
+        </Fragment>
       ))}
     </Tag>
   );
@@ -28,11 +31,14 @@ export function Letters({ text, as: Tag = "span", stagger = 38, delay = 0, class
   return (
     <Tag id={id} className={className} data-reveal="mask" aria-label={text}>
       {text.split(" ").map((w, i) => (
-        <span key={i} className="mask" aria-hidden="true">
+        // A real space between word masks so copied/indexed text reads "Built to run", not "Builttorun".
+        <Fragment key={i}>{i > 0 && " "}
+        <span className="mask" aria-hidden="true">
           {[...w].map((ch, j) => (
             <span key={j} style={v({ "--d": `${delay + n++ * stagger}ms` })}>{ch}</span>
           ))}
         </span>
+        </Fragment>
       ))}
     </Tag>
   );

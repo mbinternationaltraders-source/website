@@ -22,6 +22,7 @@ export type Product = {
   specNote: string | null;
   industries: string[];
   variants: Variant[];
+  media?: { url: string; alt: string }[];
   updatedAt: string;
 };
 

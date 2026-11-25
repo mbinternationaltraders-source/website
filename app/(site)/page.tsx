@@ -9,7 +9,7 @@ import { testimonials } from "@/lib/proof";
 import { Showreel, type ReelItem } from "@/components/showreel";
 import { LoopVideo } from "@/components/loop-video";
 import { getVideo } from "@/lib/catalog/videos";
-import { metadataFor } from "@/lib/seo";
+import { metadataFor, jsonLd } from "@/lib/seo";
 import { site, whatsappLink } from "@/lib/site";
 
 export const metadata = metadataFor(
@@ -55,7 +55,7 @@ export default async function Home() {
 
       <section className="container section" aria-labelledby="featured-title">
         <div className="split-head">
-          <p className="side-label">Parts we supply today</p>
+          <span aria-hidden="true" /> {/* keeps the heading in the right-hand column */}
           <Letters as="h2" id="featured-title" className="display" text="Featured products" />
         </div>
         <div className="feature-grid">
@@ -86,19 +86,22 @@ export default async function Home() {
         </Rise>
       </section>
 
+      {/* Hidden when no breakdown products are published, so catalogue edits cannot break the homepage. */}
+      {reel.length > 0 && (
       <section className="container section" aria-labelledby="inside-title">
         <div className="split-head">
-          <p className="side-label">Inside the parts</p>
-          <Fill as="h2" id="inside-title" className="display-two-tone" text="Every part, opened up," muted="so you know exactly what you are quoting for." />
+          <span aria-hidden="true" /> {/* keeps the heading in the right-hand column */}
+          <Fill as="h2" id="inside-title" className="display-two-tone" text="A look inside," muted="showing the typical construction of parts we supply." />
         </div>
         <Rise className="reel-rise">
           <Showreel items={reel} />
         </Rise>
       </section>
+      )}
 
       <section className="container section" aria-labelledby="why-title">
         <div className="split-head">
-          <p className="side-label">How quoting works</p>
+          <span aria-hidden="true" /> {/* keeps the heading in the right-hand column */}
           <Fill
             as="h2"
             id="why-title"
@@ -211,7 +214,7 @@ export default async function Home() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([
+          __html: jsonLd([
             {
               "@context": "https://schema.org",
               "@type": "Organization",
@@ -233,7 +236,7 @@ export default async function Home() {
               "@type": "FAQPage",
               mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
             },
-          ]).replace(/</g, "\\u003c"),
+          ]),
         }}
       />
     </>

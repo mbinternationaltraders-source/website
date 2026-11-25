@@ -6,7 +6,12 @@ import { Plus, Check } from "lucide-react";
 import type { Product, Industry, Unit } from "@/lib/catalog/types";
 import { PhotoImg } from "../product-photo";
 import { getPhotos, type Photo } from "@/lib/catalog/media";
-import { getVideo, videoPoster, videoSources, type ProductVideo } from "@/lib/catalog/videos";
+import {
+  getVideo,
+  videoPoster,
+  videoSources,
+  type ProductVideo,
+} from "@/lib/catalog/videos";
 import { LoopVideo } from "../loop-video";
 import { useBasket } from "@/lib/basket";
 import { unitLabel } from "@/lib/catalog/units";
@@ -36,8 +41,14 @@ export function ProductDetail({
     });
     return () => setProduct(null);
   }, [product, sku, setProduct]);
-  const photos = getPhotos(product.slug);
+  const photos = [
+    ...getPhotos(product.slug),
+    ...(product.media ?? []).map((m) => ({ base: m.url, url: m.url, alt: m.alt, studio: false })),
+  ];
+  const known = product.specs.filter((sp) => sp.value);
+  const unknown = product.specs.filter((sp) => !sp.value);
   const variant = product.variants.find((v) => v.sku === sku);
+  const multiUnit = (variant?.units.length ?? 0) > 1;
   function addToQuote(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     const n = Number(quantity);
@@ -62,9 +73,13 @@ export function ProductDetail({
     <div className="product-main">
       <Gallery photos={photos} video={getVideo(product.slug)} />
       <div className="product-summary">
-        {product.family !== product.name && <p className="product-family">{product.family}</p>}
+        {product.family !== product.name && (
+          <p className="product-family">{product.family}</p>
+        )}
         <h1>{product.name}</h1>
-        {product.model && <p className="product-model">Model {product.model}</p>}
+        {product.model && (
+          <p className="product-model">Model {product.model}</p>
+        )}
         <p className="product-lede">{product.description}</p>
         <div className="product-badges">
           {industries
@@ -76,34 +91,43 @@ export function ProductDetail({
             ))}
         </div>
         <form className="quote-panel" onSubmit={addToQuote}>
-          <label className="field-label" htmlFor="product-variant">
-            Variant
-          </label>
-          <select
-            className="form-control"
-            id="product-variant"
-            value={sku}
-            onChange={(e) => {
-              const next = product.variants.find(
-                (v) => v.sku === e.target.value,
-              );
-              setSku(e.target.value);
-              if (next) setUnit(next.units[0]);
-              setAdded(false);
-            }}
-          >
-            {product.variants.map((v) => (
-              <option key={v.sku} value={v.sku}>
-                {v.name === "To confirm"
-                  ? "Confirm specification with our team"
-                  : v.name}
-                {!v.sku.endsWith("-TBC") ? ` · ${v.sku}` : ""}
-              </option>
-            ))}
-          </select>
-          <div className="quantity-row">
+          {/* Selectors appear only when there is a real choice; one option is just stated in the labels. */}
+          {product.variants.length > 1 && (
+            <>
+              <label className="field-label" htmlFor="product-variant">
+                Variant
+              </label>
+              <select
+                className="form-control"
+                id="product-variant"
+                value={sku}
+                onChange={(e) => {
+                  const next = product.variants.find(
+                    (v) => v.sku === e.target.value,
+                  );
+                  setSku(e.target.value);
+                  if (next) setUnit(next.units[0]);
+                  setAdded(false);
+                }}
+              >
+                {product.variants.map((v) => (
+                  <option key={v.sku} value={v.sku}>
+                    {v.name === "To confirm"
+                      ? "Confirm specification with our team"
+                      : v.name}
+                    {!v.sku.endsWith("-TBC") ? ` · ${v.sku}` : ""}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
+          <div className={`quantity-row ${multiUnit ? "" : "quantity-single"}`}>
             <label>
-              <span className="field-label">Quantity</span>
+              <span className="field-label">
+                {multiUnit
+                  ? "Quantity"
+                  : `Quantity (${unitLabel[unit].toLowerCase()})`}
+              </span>
               <input
                 className="form-control"
                 type="number"
@@ -121,23 +145,25 @@ export function ProductDetail({
                 aria-describedby={error ? "quantity-error" : undefined}
               />
             </label>
-            <label>
-              <span className="field-label">Unit</span>
-              <select
-                className="form-control"
-                value={unit}
-                onChange={(e) => {
-                  setUnit(e.target.value as Unit);
-                  setAdded(false);
-                }}
-              >
-                {variant?.units.map((u) => (
-                  <option key={u} value={u}>
-                    {unitLabel[u]}
-                  </option>
-                ))}
-              </select>
-            </label>
+            {multiUnit && (
+              <label>
+                <span className="field-label">Unit</span>
+                <select
+                  className="form-control"
+                  value={unit}
+                  onChange={(e) => {
+                    setUnit(e.target.value as Unit);
+                    setAdded(false);
+                  }}
+                >
+                  {variant?.units.map((u) => (
+                    <option key={u} value={u}>
+                      {unitLabel[u]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
           </div>
           {error && (
             <p id="quantity-error" className="field-error" role="alert">
@@ -164,28 +190,34 @@ export function ProductDetail({
         </form>
         <section className="spec-panel">
           <h2>Technical details</h2>
-          <table className="spec-table">
-            <tbody>
-              {product.specs.map((spec) => (
-                <tr key={spec.label}>
-                  <th scope="row">{spec.label}</th>
-                  <td>
-                    {spec.value ?? (
-                      <a
-                        href={whatsappLink(
-                          `Hello, I would like to confirm ${spec.label.toLowerCase()} for ${product.name}${product.model ? ` (${product.model})` : ""}.`,
-                        )}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Ask about this specification
-                      </a>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {/* Confirmed values as rows; unknown ones grouped into one honest line instead of a column of blanks. */}
+          {known.length > 0 && (
+            <table className="spec-table">
+              <tbody>
+                {known.map((spec) => (
+                  <tr key={spec.label}>
+                    <th scope="row">{spec.label}</th>
+                    <td>{spec.value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {unknown.length > 0 && (
+            <p className="spec-pending">
+              Confirmed with your quotation:{" "}
+              {unknown.map((s) => s.label.toLowerCase()).join(", ")}.{" "}
+              <a
+                href={whatsappLink(
+                  `Hello, I would like to confirm the ${unknown.map((s) => s.label.toLowerCase()).join(", ")} for ${product.name}${product.model ? ` (${product.model})` : ""}.`,
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Ask about these on WhatsApp
+              </a>
+            </p>
+          )}
           {product.specNote && <p className="spec-note">{product.specNote}</p>}
         </section>
         <p className="product-contact">
@@ -213,13 +245,29 @@ function Gallery({ photos, video }: { photos: Photo[]; video?: ProductVideo }) {
     <div className="gallery">
       <div className="gallery-main">
         {showVideo ? (
-          <LoopVideo sources={videoSources(video.base)} poster={videoPoster(video.base)} label={video.title} className="gallery-video" />
+          <LoopVideo
+            sources={videoSources(video.base)}
+            poster={videoPoster(video.base)}
+            label={video.title}
+            className="gallery-video"
+          />
         ) : (
-          photo && <PhotoImg key={active} photo={photo} sizes="(max-width: 900px) 92vw, 50vw" eager />
+          photo && (
+            <PhotoImg
+              key={active}
+              photo={photo}
+              sizes="(max-width: 900px) 92vw, 50vw"
+              eager
+            />
+          )
         )}
       </div>
       {photos.length + (video ? 1 : 0) > 1 && (
-        <div className="gallery-thumbs" role="group" aria-label="Product photos and video">
+        <div
+          className="gallery-thumbs"
+          role="group"
+          aria-label="Product photos and video"
+        >
           {photos.map((p, i) => (
             <button
               key={p.base}
@@ -244,7 +292,13 @@ function Gallery({ photos, video }: { photos: Photo[]; video?: ProductVideo }) {
           )}
         </div>
       )}
-      {video && <p className="gallery-note">{showVideo ? "Typical construction; exact specification confirmed with your quotation." : "Includes a breakdown video. Select ▶ to play."}</p>}
+      {video && (
+        <p className="gallery-note">
+          {showVideo
+            ? "Typical construction; exact specification confirmed with your quotation."
+            : "Includes a breakdown video. Select ▶ to play."}
+        </p>
+      )}
     </div>
   );
 }

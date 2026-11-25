@@ -29,6 +29,12 @@ export function ProductCard({ product, eager = false }: { product: Product; eage
               <li key={s}>{s}</li>
             ))}
         </ul>
+        {product.variants.length > 1 ? (
+          // Several variants: never quick-add an unchosen one; the product page has the selector.
+          <Link className="card-add" href={href} aria-label={`Choose options for ${product.name}`}>
+            Choose options
+          </Link>
+        ) : (
         <button
           className="card-add"
           disabled={!variant}
@@ -43,6 +49,7 @@ export function ProductCard({ product, eager = false }: { product: Product; eage
           {added ? <Check size={16} /> : <Plus size={16} />}
           <span aria-live="polite">{added ? "Added to quote" : "Add to quote"}</span>
         </button>
+        )}
       </div>
     </article>
   );

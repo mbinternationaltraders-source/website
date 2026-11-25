@@ -4,63 +4,28 @@ import { useState } from "react";
 import { Trash2, Plus } from "lucide-react";
 import type { Product } from "@/lib/catalog/types";
 import { useBasket, type BasketItem } from "@/lib/basket";
+import { quantityError, quoteMessage } from "@/lib/quote-list";
 import { unitLabel } from "@/lib/catalog/units";
 import { ProductPhoto } from "./product-photo";
 import { EnquiryForm } from "./enquiry-form";
 import { whatsappLink } from "@/lib/site";
 import { PageLoader } from "./page-loader";
-function Quantity({
-  item,
-  onChange,
-  onValidityChange,
-  minimum,
-}: {
-  item: BasketItem;
-  onChange: (n: number) => void;
-  onValidityChange: (valid: boolean) => void;
-  minimum: number;
-}) {
-  const [draft, setDraft] = useState(String(item.quantity)),
-    [error, setError] = useState("");
-  return (
-    <label>
-      <span className="field-label">Quantity</span>
-      <input
-        className="form-control"
-        aria-label={`Quantity for ${item.sku}`}
-        type="number"
-        inputMode="decimal"
-        min={minimum}
-        max="10000000"
-        step={item.unit === "pcs" ? 1 : "any"}
-        value={draft}
-        aria-invalid={!!error}
-        onChange={(e) => {
-          setDraft(e.target.value);
-          const n = Number(e.target.value);
-          if (
-            n > 0 &&
-            n >= minimum &&
-            n <= 10000000 &&
-            (item.unit !== "pcs" || Number.isInteger(n))
-          ) {
-            onChange(n);
-            setError("");
-            onValidityChange(true);
-          } else {
-            setError(`Enter a valid quantity of at least ${minimum}.`);
-            onValidityChange(false);
-          }
-        }}
-      />
-      {error && <span className="field-error">{error}</span>}
-    </label>
-  );
-}
 export function QuoteBasket({ products }: { products: Product[] }) {
   const { items, ready, update, remove, clear } = useBasket();
-  const [invalid, setInvalid] = useState<Record<string, boolean>>({});
-  const hasInvalid = items.some((i) => invalid[`${i.sku}-${i.unit}`]);
+  // Only rejected edits live here; the basket stays the single source of truth for accepted quantities,
+  // so re-adding an item elsewhere or removing it can never leave a stale number or stale error behind.
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const keyOf = (i: BasketItem) => `${i.sku}-${i.unit}`;
+  const minimumOf = (i: BasketItem) =>
+    products.flatMap((p) => p.variants).find((v) => v.sku === i.sku)?.minQty ?? (i.unit === "pcs" ? 1 : 0.001);
+  const hasInvalid = items.some((i) => keyOf(i) in drafts);
+  const setDraft = (key: string, value: string | null) =>
+    setDrafts((current) => {
+      const next = { ...current };
+      if (value === null) delete next[key];
+      else next[key] = value;
+      return next;
+    });
   if (!ready) return <PageLoader />;
   if (!items.length)
     return (
@@ -78,12 +43,7 @@ export function QuoteBasket({ products }: { products: Product[] }) {
   const missing = items.filter(
     (i) => !products.some((p) => p.variants.some((v) => v.sku === i.sku)),
   );
-  const message = `Hello MB International Traders, I would like a quotation for:\n${items
-    .map((i) => {
-      const p = products.find((p) => p.variants.some((v) => v.sku === i.sku));
-      return `• ${p?.name ?? i.sku}: ${i.quantity} ${unitLabel[i.unit]}`;
-    })
-    .join("\n")}\nPlease help me confirm the specifications and delivery.`;
+  const message = quoteMessage(items, products);
   return (
     <div className="quote-layout">
       <section className="quote-items">
@@ -111,7 +71,10 @@ export function QuoteBasket({ products }: { products: Product[] }) {
                   )}
                   <button
                     aria-label={`Remove ${product?.name ?? item.sku}`}
-                    onClick={() => remove(item.sku, item.unit)}
+                    onClick={() => {
+                      setDraft(keyOf(item), null);
+                      remove(item.sku, item.unit);
+                    }}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -122,21 +85,32 @@ export function QuoteBasket({ products }: { products: Product[] }) {
                     : (variant?.name ?? item.sku)}
                 </small>
                 <div className="basket-controls">
-                  <Quantity
-                    item={item}
-                    minimum={
-                      variant?.minQty ?? (item.unit === "pcs" ? 1 : 0.001)
-                    }
-                    onValidityChange={(valid) =>
-                      setInvalid((previous) => ({
-                        ...previous,
-                        [`${item.sku}-${item.unit}`]: !valid,
-                      }))
-                    }
-                    onChange={(quantity) =>
-                      update(item.sku, item.unit, { quantity })
-                    }
-                  />
+                  <label>
+                    <span className="field-label">Quantity</span>
+                    <input
+                      className="form-control"
+                      aria-label={`Quantity for ${product?.name ?? item.sku}`}
+                      type="number"
+                      inputMode="decimal"
+                      min={minimumOf(item)}
+                      max="10000000"
+                      step={item.unit === "pcs" ? 1 : "any"}
+                      value={drafts[keyOf(item)] ?? String(item.quantity)}
+                      aria-invalid={keyOf(item) in drafts}
+                      aria-describedby={keyOf(item) in drafts ? `qty-${keyOf(item)}` : undefined}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (quantityError(value, item.unit, minimumOf(item))) return setDraft(keyOf(item), value);
+                        setDraft(keyOf(item), null);
+                        update(item.sku, item.unit, { quantity: Number(value) });
+                      }}
+                    />
+                    {keyOf(item) in drafts && (
+                      <span className="field-error" id={`qty-${keyOf(item)}`}>
+                        {quantityError(drafts[keyOf(item)], item.unit, minimumOf(item))}
+                      </span>
+                    )}
+                  </label>
                   <span className="basket-unit">{unitLabel[item.unit]}</span>
                 </div>
                 <input
@@ -165,15 +139,13 @@ export function QuoteBasket({ products }: { products: Product[] }) {
           {hasInvalid ? (
             <span>Correct the quantities before opening WhatsApp.</span>
           ) : (
-            <a
-              href={whatsappLink(message)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Discuss this list on WhatsApp
-            </a>
+            <>
+              <a href={whatsappLink(message)} target="_blank" rel="noopener noreferrer">
+                Discuss this list on WhatsApp
+              </a>
+              . The message includes each item, SKU, quantity and note, and you review it before sending.
+            </>
           )}
-          . You review the message before sending.
         </p>
       </section>
       <section className="quote-form-card">

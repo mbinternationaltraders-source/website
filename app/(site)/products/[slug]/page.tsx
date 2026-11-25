@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { getCatalog, getProduct } from "@/lib/catalog/data";
 import { ProductDetail } from "@/components/catalog/product-detail";
 import { ProductCard } from "@/components/catalog/product-card";
-import { metadataFor } from "@/lib/seo";
+import { metadataFor, jsonLd } from "@/lib/seo";
 import { site } from "@/lib/site";
 export async function generateStaticParams() {
   return (await getCatalog()).products.map((p) => ({ slug: p.slug }));
@@ -16,9 +16,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const p = await getProduct((await params).slug);
-  return p
-    ? metadataFor(p.name, p.summary, `/products/${p.slug}`)
-    : { title: "Product not found" };
+  // Resolved before the page streams, so an unknown slug gets a real 404 status, not a "soft 404".
+  if (!p) notFound();
+  return metadataFor(p.name, describe(`${p.summary} ${p.description}`), `/products/${p.slug}`);
 }
 async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const product = await getProduct((await params).slug);
@@ -61,7 +61,7 @@ async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLd({
             "@context": "https://schema.org",
             "@type": "Product",
             name: product.name,
@@ -76,7 +76,7 @@ async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
                 name: s.label,
                 value: s.value,
               })),
-          }).replace(/</g, "\u003c"),
+          }),
         }}
       />
     </>
@@ -91,4 +91,11 @@ export default function Page(props: { params: Promise<{ slug: string }> }) {
       <ProductPage {...props} />
     </Suspense>
   );
+}
+
+// Search snippets: up to ~160 characters, cut at a word boundary.
+function describe(text: string) {
+  if (text.length <= 160) return text;
+  const cut = text.slice(0, 157);
+  return `${cut.slice(0, cut.lastIndexOf(" "))}…`;
 }
